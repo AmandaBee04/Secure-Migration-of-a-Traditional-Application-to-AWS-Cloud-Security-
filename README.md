@@ -1,0 +1,2 @@
+# Secure Migration of a Traditional Application to AWS (Cloud Security)
+This assignment aims to provide practical experience in securely modernizing and migrating a legacy on-premises application to a secure and resilient AWS cloud architecture. Students will analyze security weaknesses in legacy systems, design cloud-native security controls, implement the solution using Infrastructure as Code (IaC), and validate the deployed environment against common security threats.
