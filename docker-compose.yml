@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+
+  # ─── MySQL Database ─────────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: sms_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      MYSQL_DATABASE: ${DB_DATABASE:-sms_db}
+      MYSQL_USER: ${DB_USERNAME:-sms_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sms_pass}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - sms_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Laravel Backend ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./studentManagement
+      dockerfile: Dockerfile
+    container_name: sms_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_NAME: "Student Management System"
+      APP_ENV: production
+      APP_KEY: "base64:3gjA/3mnRjRqodVhZTYUSyZbGVqe6IRZa01W/X3miDY="
+      APP_DEBUG: "false"
+      APP_URL: http://localhost
+      HASH_DRIVER: argon2id
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-sms_db}
+      DB_USERNAME: ${DB_USERNAME:-sms_user}
+      DB_PASSWORD: ${DB_PASSWORD:-sms_pass}
+      PASSWORD_PEPPER: ${PASSWORD_PEPPER:-changeme_pepper_secret}
+      SANCTUM_STATEFUL_DOMAINS: localhost,127.0.0.1
+      SESSION_DRIVER: file
+      CACHE_DRIVER: file
+      QUEUE_CONNECTION: sync
+    networks:
+      - sms_network
+    volumes:
+      - laravel_storage:/var/www/html/storage
+
+  # ─── React Frontend ──────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./6Day-Grind/6Day-Grind
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "/api"   # Relative — proxied by frontend nginx to backend
+    container_name: sms_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - sms_network
+
+networks:
+  sms_network:
+    driver: bridge
+
+volumes:
+  db_data:
+  laravel_storage:
