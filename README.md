@@ -1,7 +1,6 @@
 # Student Management System (SMS)
 
 **CCS6344 – Database and Cloud Security | Assignment 2**
-**TC1L_GROUP 6** | Pragash Varman | Amanda Bee Jing Ying | Sim Jia Zheng
 
 A secure, cloud-native Student Management System migrated from a monolithic on-premises architecture to AWS, implementing defence-in-depth security across all layers.
 
